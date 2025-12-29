@@ -1,0 +1,366 @@
+{
+  "name": "nexus-reposwarm",
+  "displayName": "RepoSwarm - AI Repository Analyzer",
+  "version": "1.0.0",
+  "description": "AI-powered repository analysis and architecture discovery platform. Analyze GitHub, GitLab, and Bitbucket repositories to generate comprehensive architecture documentation, security findings, and actionable recommendations.",
+  "developer": {
+    "name": "Adverant",
+    "url": "https://adverant.ai",
+    "email": "plugins@adverant.ai",
+    "verified": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adverant/nexus-reposwarm"
+  },
+  "license": "MIT",
+  "keywords": [
+    "repository-analysis",
+    "architecture",
+    "documentation",
+    "ai",
+    "code-review",
+    "security-scanning",
+    "github",
+    "gitlab",
+    "bitbucket"
+  ],
+  "nexus": {
+    "minVersion": "1.0.0",
+    "executionMode": "mcp_container",
+    "isolationLevel": 2,
+    "capabilities": [
+      "repository-analysis",
+      "architecture-discovery",
+      "security-scanning",
+      "performance-analysis",
+      "documentation-review",
+      "testing-analysis",
+      "continuous-monitoring",
+      "webhook-notifications"
+    ],
+    "permissions": [
+      "network:github.com",
+      "network:api.github.com",
+      "network:gitlab.com",
+      "network:bitbucket.org",
+      "filesystem:temp",
+      "service:mageagent",
+      "service:graphrag",
+      "service:fileprocess"
+    ],
+    "entrypoint": "dist/index.js",
+    "healthCheck": "/health",
+    "readinessCheck": "/ready",
+    "livenessCheck": "/live"
+  },
+  "resources": {
+    "cpuMillicores": 1000,
+    "memoryMB": 2048,
+    "diskGB": 10,
+    "timeoutMs": 600000,
+    "maxConcurrentJobs": 5
+  },
+  "api": {
+    "version": "v1",
+    "basePath": "/api/v1/reposwarm",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/analyze",
+        "description": "Start a new repository analysis",
+        "rateLimit": "10/minute"
+      },
+      {
+        "method": "GET",
+        "path": "/analysis/:analysisId",
+        "description": "Get analysis result by ID"
+      },
+      {
+        "method": "POST",
+        "path": "/analyze/batch",
+        "description": "Start batch analysis for multiple repositories",
+        "rateLimit": "2/minute"
+      },
+      {
+        "method": "GET",
+        "path": "/history",
+        "description": "Get analysis history"
+      },
+      {
+        "method": "GET",
+        "path": "/export/:analysisId",
+        "description": "Export analysis in various formats"
+      },
+      {
+        "method": "GET",
+        "path": "/compare",
+        "description": "Compare two analyses"
+      },
+      {
+        "method": "POST",
+        "path": "/monitors",
+        "description": "Create a repository monitor"
+      },
+      {
+        "method": "GET",
+        "path": "/monitors",
+        "description": "List all monitors"
+      },
+      {
+        "method": "PATCH",
+        "path": "/monitors/:monitorId",
+        "description": "Update a monitor"
+      },
+      {
+        "method": "DELETE",
+        "path": "/monitors/:monitorId",
+        "description": "Delete a monitor"
+      },
+      {
+        "method": "POST",
+        "path": "/webhooks",
+        "description": "Register a webhook endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/webhooks",
+        "description": "List all webhooks"
+      }
+    ]
+  },
+  "pricing": {
+    "model": "hybrid",
+    "currency": "USD",
+    "tiers": [
+      {
+        "name": "free",
+        "displayName": "Free",
+        "priceMonthly": 0,
+        "priceYearly": 0,
+        "limits": {
+          "analysisPerMonth": 5,
+          "maxRepoSizeBytes": 52428800,
+          "maxMonitors": 0,
+          "maxFilesPerAnalysis": 500
+        },
+        "features": [
+          "quick-analysis",
+          "basic-detection",
+          "markdown-export",
+          "json-export"
+        ],
+        "analysisDepths": ["quick"]
+      },
+      {
+        "name": "starter",
+        "displayName": "Starter",
+        "priceMonthly": 2900,
+        "priceYearly": 29000,
+        "limits": {
+          "analysisPerMonth": 50,
+          "maxRepoSizeBytes": 524288000,
+          "maxMonitors": 5,
+          "maxFilesPerAnalysis": 2000
+        },
+        "features": [
+          "standard-analysis",
+          "security-scan",
+          "history",
+          "markdown-export",
+          "json-export",
+          "html-export"
+        ],
+        "analysisDepths": ["quick", "standard"]
+      },
+      {
+        "name": "professional",
+        "displayName": "Professional",
+        "priceMonthly": 9900,
+        "priceYearly": 99000,
+        "limits": {
+          "analysisPerMonth": 500,
+          "maxRepoSizeBytes": 2147483648,
+          "maxMonitors": 25,
+          "maxFilesPerAnalysis": 10000
+        },
+        "features": [
+          "deep-analysis",
+          "monitoring",
+          "webhooks",
+          "api-access",
+          "all-formats",
+          "priority-queue"
+        ],
+        "analysisDepths": ["quick", "standard", "deep"],
+        "popular": true
+      },
+      {
+        "name": "enterprise",
+        "displayName": "Enterprise",
+        "priceMonthly": 49900,
+        "priceYearly": 499000,
+        "limits": {
+          "analysisPerMonth": -1,
+          "maxRepoSizeBytes": -1,
+          "maxMonitors": -1,
+          "maxFilesPerAnalysis": -1
+        },
+        "features": [
+          "everything",
+          "priority-support",
+          "custom-prompts",
+          "sla",
+          "dedicated-agents",
+          "private-deployment"
+        ],
+        "analysisDepths": ["quick", "standard", "deep"]
+      }
+    ],
+    "usage": {
+      "analysisOverage": {
+        "unit": "analysis",
+        "priceCents": 100
+      },
+      "storageOverage": {
+        "unit": "GB",
+        "priceCents": 50
+      },
+      "monitorCheckOverage": {
+        "unit": "check",
+        "priceCents": 10
+      },
+      "tokenOverage": {
+        "unit": "1K tokens",
+        "priceCents": 1
+      }
+    }
+  },
+  "ui": {
+    "tier": 2,
+    "type": "template",
+    "capabilities": [
+      {
+        "type": "template",
+        "template": "analysis-form",
+        "config": {
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "repoUrl": {
+                "type": "string",
+                "title": "Repository URL",
+                "description": "GitHub, GitLab, or Bitbucket repository URL"
+              },
+              "branch": {
+                "type": "string",
+                "title": "Branch",
+                "default": "main"
+              },
+              "analysisDepth": {
+                "type": "string",
+                "title": "Analysis Depth",
+                "enum": ["quick", "standard", "deep"],
+                "default": "standard"
+              },
+              "includeSecurityScan": {
+                "type": "boolean",
+                "title": "Security Scan",
+                "default": true
+              }
+            },
+            "required": ["repoUrl"]
+          },
+          "submitEndpoint": "/api/v1/reposwarm/analyze"
+        }
+      },
+      {
+        "type": "template",
+        "template": "analysis-results",
+        "config": {
+          "sections": ["architecture", "findings", "recommendations"],
+          "exportFormats": ["md", "pdf", "html", "json"]
+        }
+      },
+      {
+        "type": "template",
+        "template": "monitoring-dashboard",
+        "config": {
+          "listEndpoint": "/api/v1/reposwarm/monitors",
+          "addEndpoint": "/api/v1/reposwarm/monitors"
+        }
+      }
+    ],
+    "navigation": {
+      "location": "dedicated-tab",
+      "icon": "code-branch",
+      "label": "RepoSwarm"
+    }
+  },
+  "marketplace": {
+    "category": "developer-tools",
+    "subcategory": "code-analysis",
+    "tags": [
+      "repository-analysis",
+      "architecture",
+      "documentation",
+      "ai",
+      "code-review",
+      "security",
+      "github",
+      "gitlab",
+      "bitbucket"
+    ],
+    "featured": true,
+    "screenshots": [
+      {
+        "url": "/assets/screenshots/analysis-result.png",
+        "title": "Analysis Results",
+        "description": "Comprehensive repository analysis with architecture patterns"
+      },
+      {
+        "url": "/assets/screenshots/architecture-view.png",
+        "title": "Architecture Visualization",
+        "description": "Visual representation of detected architecture"
+      },
+      {
+        "url": "/assets/screenshots/security-scan.png",
+        "title": "Security Findings",
+        "description": "Detailed security vulnerability report"
+      },
+      {
+        "url": "/assets/screenshots/monitoring.png",
+        "title": "Continuous Monitoring",
+        "description": "Track changes across your repositories"
+      }
+    ],
+    "documentation": "https://docs.adverant.ai/plugins/reposwarm",
+    "changelog": "https://github.com/adverant/nexus-reposwarm/blob/main/CHANGELOG.md",
+    "support": {
+      "email": "support@adverant.ai",
+      "docs": "https://docs.adverant.ai/plugins/reposwarm",
+      "chat": "https://discord.gg/adverant"
+    }
+  },
+  "integrations": {
+    "required": [
+      {
+        "service": "mageagent",
+        "minVersion": "1.0.0",
+        "purpose": "Multi-agent AI orchestration for analysis"
+      },
+      {
+        "service": "graphrag",
+        "minVersion": "1.0.0",
+        "purpose": "Caching and pattern learning"
+      }
+    ],
+    "optional": [
+      {
+        "service": "fileprocess",
+        "minVersion": "1.0.0",
+        "purpose": "Advanced file processing"
+      }
+    ]
+  }
+}

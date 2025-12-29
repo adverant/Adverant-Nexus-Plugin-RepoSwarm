@@ -1,0 +1,14 @@
+# Default owners for everything
+* @adverant/plugins-team
+
+# Documentation
+/docs/ @adverant/docs-team
+
+# Security-related files
+SECURITY.md @adverant/security-team
+/.github/workflows/security.yml @adverant/security-team
+
+# Build configuration
+Dockerfile @adverant/devops-team
+/k8s/ @adverant/devops-team
+/.github/workflows/ @adverant/devops-team

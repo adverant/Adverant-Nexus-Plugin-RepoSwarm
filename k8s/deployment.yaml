@@ -1,0 +1,220 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus-reposwarm
+  namespace: nexus
+  labels:
+    app: nexus-reposwarm
+    app.kubernetes.io/name: nexus-reposwarm
+    app.kubernetes.io/component: plugin
+    app.kubernetes.io/part-of: nexus
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus-reposwarm
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: nexus-reposwarm
+        app.kubernetes.io/name: nexus-reposwarm
+        app.kubernetes.io/component: plugin
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9200"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: nexus-reposwarm
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: nexus-reposwarm
+          image: localhost:5000/nexus-reposwarm:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 9200
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "9200"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: GRAPHRAG_URL
+              value: "http://nexus-graphrag:9020"
+            - name: MAGEAGENT_URL
+              value: "http://nexus-mageagent:9010"
+            - name: FILEPROCESS_URL
+              value: "http://nexus-fileprocess:9040"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-database
+                  key: connection-string
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-reposwarm-secrets
+                  key: github-token
+                  optional: true
+            - name: GITLAB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-reposwarm-secrets
+                  key: gitlab-token
+                  optional: true
+            - name: BITBUCKET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-reposwarm-secrets
+                  key: bitbucket-token
+                  optional: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 5Gi
+        - name: cache
+          emptyDir:
+            sizeLimit: 2Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: nexus-reposwarm
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: nexus-reposwarm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus-reposwarm
+  namespace: nexus
+  labels:
+    app: nexus-reposwarm
+    app.kubernetes.io/name: nexus-reposwarm
+    app.kubernetes.io/component: plugin
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9200
+      targetPort: http
+      protocol: TCP
+  selector:
+    app: nexus-reposwarm
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nexus-reposwarm
+  namespace: nexus
+  labels:
+    app: nexus-reposwarm
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nexus-reposwarm
+  namespace: nexus
+  labels:
+    app: nexus-reposwarm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nexus-reposwarm
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nexus-reposwarm
+  namespace: nexus
+  labels:
+    app: nexus-reposwarm
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: nexus-reposwarm

@@ -1,0 +1,125 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nexus-reposwarm-monitor
+  namespace: nexus
+  labels:
+    app: nexus-reposwarm-monitor
+    app.kubernetes.io/name: nexus-reposwarm-monitor
+    app.kubernetes.io/component: cronjob
+    app.kubernetes.io/part-of: nexus
+spec:
+  # Run every hour to check for monitors that need processing
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600  # 1 hour max runtime
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: nexus-reposwarm-monitor
+            app.kubernetes.io/name: nexus-reposwarm-monitor
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: monitor-worker
+              image: localhost:5000/nexus-reposwarm:latest
+              imagePullPolicy: Always
+              command:
+                - node
+                - dist/workers/monitor-worker.js
+              env:
+                - name: NODE_ENV
+                  value: "production"
+                - name: REPOSWARM_URL
+                  value: "http://nexus-reposwarm:9200"
+                - name: GRAPHRAG_URL
+                  value: "http://nexus-graphrag:9020"
+                - name: MAGEAGENT_URL
+                  value: "http://nexus-mageagent:9010"
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: nexus-database
+                      key: connection-string
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: nexus-reposwarm-secrets
+                      key: github-token
+                      optional: true
+                - name: GITLAB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: nexus-reposwarm-secrets
+                      key: gitlab-token
+                      optional: true
+                - name: BITBUCKET_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: nexus-reposwarm-secrets
+                      key: bitbucket-token
+                      optional: true
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+---
+# Optional: Manual trigger job for testing
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nexus-reposwarm-monitor-manual
+  namespace: nexus
+  labels:
+    app: nexus-reposwarm-monitor
+    manual: "true"
+spec:
+  suspend: true  # Start suspended, resume to run
+  template:
+    metadata:
+      labels:
+        app: nexus-reposwarm-monitor
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: monitor-worker
+          image: localhost:5000/nexus-reposwarm:latest
+          command:
+            - node
+            - dist/workers/monitor-worker.js
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: REPOSWARM_URL
+              value: "http://nexus-reposwarm:9200"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-database
+                  key: connection-string
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
