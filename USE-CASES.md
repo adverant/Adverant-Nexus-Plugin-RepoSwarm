@@ -115,9 +115,9 @@ class DeveloperOnboarding {
 
 ### Business Impact
 
-- **80% reduction in onboarding time** (4-6 weeks to 1-2 days)
+- **Faster onboarding** through automated documentation
 - **Consistent onboarding** regardless of documentation state
-- **Role-specific guidance** for immediate productivity
+- **Role-specific guidance** for improved productivity
 - **Self-service exploration** reduces senior developer interruptions
 
 ---
@@ -255,8 +255,8 @@ class SecurityAudit:
 
 ### Business Impact
 
-- **90% faster security audits** than manual review
-- **Continuous monitoring** catches vulnerabilities immediately
+- **Faster security audits** than manual review
+- **Continuous monitoring** catches vulnerabilities quickly
 - **Automated remediation** suggestions with code fixes
 - **Compliance tracking** for SOC2, HIPAA, PCI-DSS
 

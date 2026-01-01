@@ -1,21 +1,19 @@
 # RepoSwarm Quick Start Guide
 
-**Understand any codebase in minutes, not weeks** - Join 3,000+ development teams who've analyzed over 50,000 repositories using RepoSwarm's AI-powered architecture discovery.
-
-> "RepoSwarm saved our team 3 weeks of onboarding time. New developers can understand our entire architecture in a single afternoon." - Alex Chen, VP Engineering, TechScale Inc.
+**AI-powered repository analysis** - Analyze GitHub, GitLab, and Bitbucket repositories to generate architecture documentation, security findings, and actionable recommendations.
 
 ---
 
 ## The RepoSwarm Advantage
 
-| Metric | Manual Code Review | RepoSwarm | Impact |
-|--------|-------------------|-----------|--------|
-| Architecture Discovery | 2-4 weeks | 15 minutes | **99% faster** |
-| Security Audit | 1-2 weeks | 10 minutes | **Instant vulnerabilities** |
-| Documentation Generation | Days | Automatic | **Always up-to-date** |
-| Onboarding Time | 4-6 weeks | 1-2 days | **80% reduction** |
+| Feature | Manual Code Review | RepoSwarm |
+|---------|-------------------|-----------|
+| Architecture Discovery | Manual documentation | AI-generated diagrams |
+| Security Scanning | Separate tools | Integrated analysis |
+| Documentation | Manual creation | Auto-generated |
+| Onboarding Support | Tribal knowledge | Searchable insights |
 
-**Average team saves 120+ engineering hours per repository analyzed.**
+**Analysis depth and results vary based on repository size and complexity.**
 
 ---
 
